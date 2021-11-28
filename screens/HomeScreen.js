@@ -2,10 +2,11 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react'
 import { StyleSheet, Image, View, Text, Button, SafeAreaView, TouchableOpacity } from 'react-native';
 import useAuth from '../hooks/useAuth';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import tw from 'tailwind-rn';
 import { AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
+import { db, doc } from '../firebase';
 
 const DATA = [
   {
@@ -39,6 +40,8 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const { user, logout } = useAuth();
   const swipeRef = useRef();
+  const [profiles, setProfiles] = useState([]);
+
 
   useLayoutEffect(() => {
     navigation.setOptions({headerShown: false,
@@ -100,7 +103,7 @@ const HomeScreen = () => {
       }
     }}
     animateCardOpacity
-      renderCard={card => (
+      renderCard={card => card ? (
         <View 
         key={card.id} style={tw('relative bg-white h-3/4 rounded-xl')}>
               <Image
@@ -114,6 +117,16 @@ const HomeScreen = () => {
           </View>
           <Text style={tw('text-2xl font-bold')}>{card.age}</Text>
           </View>  
+        </View>
+      ) : (
+        <View style={[tw('relative bg-white h-3/4 rounded-xl justify-center items-center'), styles.cardShadow]}>
+          <Text style={tw('font-bold pb-5')}>No more profiles</Text>
+          <Image
+            style={tw('h-20 w-full')}
+            height={100}
+            width={100}
+            source={{ uri: "http://links.papareact.com/6gb"}}
+          />
         </View>
         )}
         />
