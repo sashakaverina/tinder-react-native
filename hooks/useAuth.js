@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { View, Text } from 'react-native'
 import * as Google from "expo-google-app-auth";
 import { GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut } from '@firebase/auth';
@@ -51,14 +51,20 @@ export const AuthProvider = ( { children }) => {
     }).catch(error => setError(error))
     .finally(() => setLoading(false));
   };
-  return (
-    <AuthContext.Provider value={{
+
+
+  const memoedValue = useMemo(() => ({
       user,
       loading,
       error,
       signInWithGoogle,
       logout,
-    }}>
+  }), [user, loading, error]);
+
+  return (
+    <AuthContext.Provider value={
+      memoedValue
+    }>
       {!loadingInitial && children}
     </AuthContext.Provider>
   )
