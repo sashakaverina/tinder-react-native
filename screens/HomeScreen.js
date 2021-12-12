@@ -7,7 +7,7 @@ import tw from 'tailwind-rn';
 import { AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
 import { db, doc } from '../firebase';
-import { onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, setDoc } from 'firebase/firestore';
 
 const DATA = [
   {
@@ -49,6 +49,35 @@ const HomeScreen = () => {
   });
  }, []);
 
+ useEffect(() => {
+   let unsub;
+
+   const fetchCards = async () => {
+     unsub = onSnapshot(collection(db, 'users'), snapshot => {
+       setProfiles(snapshot.docs.map((doc) => ({
+         id: doc.id,
+         ...doc.data(),
+       })))
+     })
+   }
+   fetchCards();
+   return unsub;
+ }, [])
+
+
+
+ const swipeLeft = async() => {
+   if (!profiles[cardIndex]) return;
+   const userSwiped = profiles[cardIndex];
+   setDoc(doc(db, "users", user.uid, 'passes', userSwiped.id), userSwiped)
+
+ }
+
+ const swipeRight = async() => {
+   
+}
+
+
  
 
 
@@ -80,7 +109,7 @@ const HomeScreen = () => {
     <Swiper
     ref={swipeRef} 
     containerStyle={{ backgroundColor: "transparent"}}
-    cards={DATA}
+    cards={profiles}
     stackSize={5}
     cardIndex={0}
     verticalSwipe={false}
@@ -117,7 +146,7 @@ const HomeScreen = () => {
               />
         <View style={[tw('absolute bottom-0 bg-white w-full justify-between px-6 py-2 items-center flex-row h-20 rounded-b-xl'), styles.cardShadow]}>
           <View >
-            <Text style={tw('text-xl font-bold')}>{card.firstName} {card.lastName}</Text>
+            <Text style={tw('text-xl font-bold')}>{card.displayName}</Text>
             <Text>{card.occupation}</Text>
           </View>
           <Text style={tw('text-2xl font-bold')}>{card.age}</Text>
