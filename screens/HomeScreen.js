@@ -7,6 +7,7 @@ import tw from 'tailwind-rn';
 import { AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
 import { db, doc } from '../firebase';
+import { onSnapshot } from 'firebase/firestore';
 
 const DATA = [
   {
@@ -47,6 +48,10 @@ const HomeScreen = () => {
     navigation.setOptions({headerShown: false,
   });
  }, []);
+
+ 
+
+
 
   return (
     <SafeAreaView style={tw('flex-1')}>
