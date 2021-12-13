@@ -7,7 +7,8 @@ import tw from 'tailwind-rn';
 import { AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
 import { db } from '../firebase';
-import { collection, onSnapshot, setDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, setDoc, doc, getDocs, query, where, getDoc, DocumentSnapshot, serverTimestamp } from 'firebase/firestore';
+import generateId from '../lib/generateid';
 
 const DATA = [
   {
@@ -72,7 +73,7 @@ const HomeScreen = () => {
    return unsub;
    
 
- }, [])
+ }, [db])
 
 
 
@@ -87,7 +88,30 @@ const HomeScreen = () => {
  const swipeRight = async(cardIndex) => {
    if (!profiles[cardIndex]) return;
    const userSwiped = profiles[cardIndex];
-   setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped)
+   const loggedInProfile  = await (await getDoc(db, 'users', user.uid)).data();
+   getDoc(doc(db, 'users', userSwiped.id, 'swipes', user.uid)).then(
+     (documentSnapshot) => {
+       if (documentSnapshot.exists())
+ {
+   setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped);
+   setDoc(doc(db, 'matches', generateId(user.uid, userSwiped.id)), {
+     users: {
+       [user.uid]: loggedInProfile,
+       [userSwiped.id]: userSwiped
+     },
+     usersMatched: [user.uid, userSwiped.id],
+     timestamp: serverTimestamp(),
+   });
+   navigation.navigate("Match", {
+     loggedInProfile, userSwiped,
+   })
+ } else {
+  setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped);
+ }
+
+}
+   );
+   
    
 };
 
