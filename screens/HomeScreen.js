@@ -6,8 +6,8 @@ import { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import tw from 'tailwind-rn';
 import { AntDesign, Entypo, Ionicons} from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
-import { db, doc } from '../firebase';
-import { collection, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, onSnapshot, setDoc, doc, getDocs, query, where } from 'firebase/firestore';
 
 const DATA = [
   {
@@ -54,8 +54,15 @@ const HomeScreen = () => {
    
 
    const fetchCards = async () => {
-     unsub = onSnapshot(collection(db, 'users'), snapshot => {
-       setProfiles(snapshot.docs.map((doc) => ({
+     const passes = getDocs(collection(db, 'users', user.uid, 'passes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
+     const swipes = getDocs(collection(db, 'users', user.uid, 'swipes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
+
+     const passedUserIds = passes.length > 0 ? passes : ['test'];
+     const swipedUserIds = swipes.length > 0 ? swipes : ['test'];
+
+     unsub = onSnapshot(query(collection(db, 'users'), where('id', 'not-in', [...passedUserIds, ...swipedUserIds])), snapshot => {
+       setProfiles(snapshot.docs.filter(doc => doc.id !== user.uid) 
+        .map((doc) => ({
          id: doc.id,
          ...doc.data(),
        })))
@@ -70,16 +77,19 @@ const HomeScreen = () => {
 
 
 
- const swipeLeft = async() => {
+ const swipeLeft = async(cardIndex) => {
    if (!profiles[cardIndex]) return;
    const userSwiped = profiles[cardIndex];
-   setDoc(doc(db, "users", user.uid, 'passes', userSwiped.id), userSwiped)
+   setDoc(doc(db, 'users', user.uid, 'passes', userSwiped.id), userSwiped)
 
  }
 
- const swipeRight = async() => {
+ const swipeRight = async(cardIndex) => {
+   if (!profiles[cardIndex]) return;
+   const userSwiped = profiles[cardIndex];
+   setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped)
    
-}
+};
 
 
  
@@ -117,7 +127,12 @@ const HomeScreen = () => {
     stackSize={5}
     cardIndex={0}
     verticalSwipe={false}
-    onSwipedLeft={() => {
+    onSwipedLeft={(cardIndex) => {
+      swipeLeft(cardIndex);
+
+    }}
+    onSwipedRight={(cardIndex) => {
+      swipeRight(cardIndex);
 
     }}
     overlayLabels={{
