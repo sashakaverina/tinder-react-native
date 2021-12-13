@@ -51,6 +51,7 @@ const HomeScreen = () => {
 
  useEffect(() => {
    let unsub;
+   
 
    const fetchCards = async () => {
      unsub = onSnapshot(collection(db, 'users'), snapshot => {
@@ -62,7 +63,10 @@ const HomeScreen = () => {
    }
    fetchCards();
    return unsub;
+   
+
  }, [])
+
 
 
 
@@ -141,7 +145,7 @@ const HomeScreen = () => {
         <View 
         key={card.id} style={tw('relative bg-white h-3/4 rounded-xl')}>
               <Image
-              source={{ uri: card.photoUrl}}
+              source={{ uri: card.photoURL }}
               style={tw('absolute top-0 h-full w-full rounded-xl')}
               />
         <View style={[tw('absolute bottom-0 bg-white w-full justify-between px-6 py-2 items-center flex-row h-20 rounded-b-xl'), styles.cardShadow]}>
