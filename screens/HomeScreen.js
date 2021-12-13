@@ -55,8 +55,8 @@ const HomeScreen = () => {
    
 
    const fetchCards = async () => {
-     const passes = getDocs(collection(db, 'users', user.uid, 'passes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
-     const swipes = getDocs(collection(db, 'users', user.uid, 'swipes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
+     const passes = await getDocs(collection(db, 'users', user.uid, 'passes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
+     const swipes = await getDocs(collection(db, 'users', user.uid, 'swipes')).then(snapshot => snapshot.docs.map((doc) => doc.id));
 
      const passedUserIds = passes.length > 0 ? passes : ['test'];
      const swipedUserIds = swipes.length > 0 ? swipes : ['test'];
@@ -88,24 +88,27 @@ const HomeScreen = () => {
  const swipeRight = async(cardIndex) => {
    if (!profiles[cardIndex]) return;
    const userSwiped = profiles[cardIndex];
-   const loggedInProfile  = await (await getDoc(db, 'users', user.uid)).data();
+  
+   const loggedInProfile  = await (await getDoc(doc(db, 'users', user.uid))).data();
    getDoc(doc(db, 'users', userSwiped.id, 'swipes', user.uid)).then(
      (documentSnapshot) => {
        if (documentSnapshot.exists())
  {
+   console.log("you matched");
    setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped);
    setDoc(doc(db, 'matches', generateId(user.uid, userSwiped.id)), {
      users: {
        [user.uid]: loggedInProfile,
-       [userSwiped.id]: userSwiped
+       [userSwiped.id]: userSwiped,
      },
      usersMatched: [user.uid, userSwiped.id],
      timestamp: serverTimestamp(),
    });
    navigation.navigate("Match", {
      loggedInProfile, userSwiped,
-   })
+   });
  } else {
+   console.log('You swiped on');
   setDoc(doc(db, 'users', user.uid, 'swipes', userSwiped.id), userSwiped);
  }
 
