@@ -5,9 +5,10 @@ import tw from 'tailwind-rn'
 import useAuth from '../hooks/useAuth';
 import { db } from '../firebase';
 import { query } from '@firebase/firestore';
+import ChatRow from './ChatRow';
 
 const ChatList = () => {
-  const [matches, setMatches] = useState();
+  const [matches, setMatches] = useState([]);
   const { user } = useAuth();
 
   useEffect(() => 
@@ -18,19 +19,25 @@ const ChatList = () => {
         id: doc.id,
         ...doc.data(),
       }))
-    )), [user])
+    )), [user]);
 
-  return 
+ 
+
+  return (
     matches.length > 0 ? (
-    <FlatList
-    data={matches}
-    keyExtractor={item => item.id}
-    />
-  ) : (
-    <View style={tw('p-5')}>
+      <FlatList
+      style={tw('h-full')}
+        data={matches}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item}) => <ChatRow matchDetails={item}/>}
+      />
+
+    ) : (
+      <View style={tw('p-5')}>
       <Text style={tw('text-center text-lg')}>No matches at the moment 😢</Text>
 
     </View>
+    )
 
   );
 };
